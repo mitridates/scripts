@@ -13,7 +13,7 @@
  */
  function Nestedchild (selector) {
     if (!(this instanceof Nestedchild)) return new Nestedchild(selector)
-    this._selector  = this.setSelector(selector);
+    this.root  = this.createRoot(this.setSelector(selector));
 }
 /**
  * Establece el selector actual
@@ -28,12 +28,34 @@ Nestedchild.prototype.setSelector = function(selector){
       if(selector.startWith('.')) return  document.querySelectorAll(selector);
       if(selector.startWith('#')) return  document.getElementById(selector);
     }
-    console.log('Unknow selector "'+ selector +'" en Nestedchild');
+    alert('Unknow selector "'+ selector +'" en Nestedchild:setSelector(selector)');
+   return null;
 };
 
+/**
+ * Establece el selector actual
+ * @name Nestedchild#setSelector
+ * @method
+ * @param {*} selector
+ * @returns this
+ */
+Nestedchild.prototype.createRoot = function(selector){
+      
+};
 
-
-
+/**
+ * Establece el selector actual
+ * @name Nestedchild#setSelector
+ * @method
+ * @param {*} selector
+ * @returns this
+ */
+Nestedchild.prototype.getLeaf = function(object, parent){
+      return {
+       parent: parent|null,
+       source: object.getAttribute()
+      };
+};
 
 /**
  * Immediately-Invoked Function Expression (IIFE).
