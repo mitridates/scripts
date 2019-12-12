@@ -28,11 +28,9 @@
  */
 Nestedchild.prototype.setSelector = function(selector){
     if(typeof selector == "object" ) return selector;
-    if(typeof selector == "string" ){
-      if(selector.startWith('.')) return  document.querySelectorAll(selector);
-      if(selector.startWith('#')) return  document.getElementById(selector);
+    if(typeof selector == "string" ) return  document.querySelector(selector);
     }
-    alert('Unknow selector "'+ selector +'" en Nestedchild:setSelector(selector)');
+    console.log('Unknow selector "'+ selector +'" en Nestedchild:setSelector(selector)');
    return null;
 };
 
@@ -46,8 +44,9 @@ Nestedchild.prototype.setSelector = function(selector){
  */
 Nestedchild.prototype.getPopulator = function(object, parent){
      return {
-       parent: parent|null,
+       parent: parent,
        source: object.getAttribute('data-source'),
+       parameters: object.getAttribute('data-parameters'),
        child: object.getAttribute('data-child'),
       };
 };
