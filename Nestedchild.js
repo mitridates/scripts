@@ -1,5 +1,9 @@
+
+
+
+
 /**
- * @fileOverview Constructor Nestedchild
+ * @fileOverview Constructor Nestedchild / Populate
  * @author <a href="mailto:mitridates@gmail.com">Mitridates</a>
  * @version 1.0
  */
@@ -13,7 +17,7 @@
  */
  function Nestedchild (selector) {
     if (!(this instanceof Nestedchild)) return new Nestedchild(selector)
-    this.root  = this.createRoot(this.setSelector(selector));
+    this.root  = this.getPopulator(this.setSelector(selector), null);
 }
 /**
  * Establece el selector actual
@@ -33,27 +37,18 @@ Nestedchild.prototype.setSelector = function(selector){
 };
 
 /**
- * Establece el selector actual
- * @name Nestedchild#setSelector
+ * Get nest
+ * @name Nestedchild#getPopulator
  * @method
- * @param {*} selector
+ * @param {Object} object Children/root
+ * @param {Object|null} parent
  * @returns this
  */
-Nestedchild.prototype.createRoot = function(selector){
-      
-};
-
-/**
- * Establece el selector actual
- * @name Nestedchild#setSelector
- * @method
- * @param {*} selector
- * @returns this
- */
-Nestedchild.prototype.getLeaf = function(object, parent){
-      return {
+Nestedchild.prototype.getPopulator = function(object, parent){
+     return {
        parent: parent|null,
-       source: object.getAttribute()
+       source: object.getAttribute('data-source'),
+       child: object.getAttribute('data-child'),
       };
 };
 
