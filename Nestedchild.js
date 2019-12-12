@@ -18,10 +18,9 @@
  function Nestedchild (selector) {
     this.root  = this.getSelector(selector);
     if(this.root==null || this.root.tagName.toLowerCase()!=='select'){
-     console.log('Tipo de dato equivocado '+(typeof selector)+', se esperaba "SELECT"');
+     console.log('Tipo de selector equivocado '+(typeof this.root)+', se esperaba "SELECT"');
      return;
     }
-  
 }
 /**
  * Establece el selector actual
