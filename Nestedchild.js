@@ -16,8 +16,12 @@
  * @param {*} selector
  */
  function Nestedchild (selector) {
-    if (!(this instanceof Nestedchild)) return new Nestedchild(selector)
-    this.root  = this.getPopulator(this.setSelector(selector), null);
+    this.root  = this.getSelector(selector);
+    if(this.root==null || this.root.tagName.toLowerCase()!=='select'){
+     console.log('Tipo de dato equivocado '+(typeof selector)+', se esperaba "SELECT"');
+     return;
+    }
+  
 }
 /**
  * Establece el selector actual
@@ -26,12 +30,8 @@
  * @param {*} selector
  * @returns this
  */
-Nestedchild.prototype.setSelector = function(selector){
-    if(typeof selector == "object" ) return selector;
-    if(typeof selector == "string" ) return  document.querySelector(selector);
-    }
-    console.log('Unknow selector "'+ selector +'" en Nestedchild:setSelector(selector)');
-   return null;
+Nestedchild.prototype.getSelector = function(selector){
+    return (typeof selector === "object" )? selector : document.querySelector(selector);
 };
 
 /**
@@ -62,7 +62,7 @@ Nestedchild.prototype.getPopulator = function(object, parent){
      * No exponemos variables
      * @var {Object} _data
      */   
-    var _data = {};
+    let Population = {};
     /**
      * Cache global para la página actual. IIEF para no exponer variables de forma global.
      * @name Grot.cache
