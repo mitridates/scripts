@@ -19,18 +19,6 @@
   }
 
 /**
- * 
- * @name Repoblar#isSelector
- * @method
- * @param {Object} el element type SELECT
- * @returns boolean
- */
-Repoblar.prototype.isSelector = function(el){
-     let e (typeof selector === "object" )? selector : document.querySelector(selector);
-};
-
-/**
- * 
  * @name Repoblar#getSelector
  * @method
  * @param {Object} el element type SELECT 
@@ -46,3 +34,6 @@ Repoblar.prototype.getSelector = function(el, parent){
        child:el.getAttribute('data-child')
       };
 };
+
+
+let repoblar = new Repoblar('countrySelector');
