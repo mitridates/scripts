@@ -1,47 +1,33 @@
-
-
-
-
 /**
- * @fileOverview Constructor Nestedchild / Populate
+ * @fileOverview Constructor Repoblar
  * @author <a href="mailto:mitridates@gmail.com">Mitridates</a>
  * @version 1.0
  */
 
 /**
  *
- * @class Clase para crear nested select
+ * @class Clase para poblar nested select
  * @constructor
- * @name Nestedchild
+ * @name Repoblar
  * @param {*} selector
  */
- function Nestedchild (selector) {
-    this.root  = this.getSelector(selector);
+ function Repoblar(selector) {
+    this.root  =  (typeof selector === "object" )? selector : document.querySelector(selector);
     if(this.root==null || this.root.tagName.toLowerCase()!=='select'){
-     console.log('Tipo de selector equivocado '+(typeof this.root)+', se esperaba "SELECT"');
-     return;
+      console.log('Tipo de selector equivocado "'+  selector +'", se esperaba "SELECT"');
     }
+  
 }
-/**
- * Establece el selector actual
- * @name Nestedchild#setSelector
- * @method
- * @param {*} selector
- * @returns this
- */
-Nestedchild.prototype.getSelector = function(selector){
-    return (typeof selector === "object" )? selector : document.querySelector(selector);
-};
 
 /**
- * Get nest
- * @name Nestedchild#getPopulator
+ * Get node
+ * @name Repoblar#getPopulator
  * @method
  * @param {Object} object Children/root
  * @param {Object|null} parent
  * @returns this
  */
-Nestedchild.prototype.getPopulator = function(object, parent){
+Repoblar.prototype.getPopulator = function(object, parent){
      return {
        parent: parent,
        source: object.getAttribute('data-source'),
@@ -49,6 +35,10 @@ Nestedchild.prototype.getPopulator = function(object, parent){
        child: object.getAttribute('data-child'),
       };
 };
+
+
+
+
 
 /**
  * Immediately-Invoked Function Expression (IIFE).
