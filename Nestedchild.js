@@ -51,6 +51,33 @@ Repoblar.prototype.bindAll = function(){
      child= document.querySelector($this.getChild(el));
     });
    } while (child !==null );
+ return this;
+};
+
+
+/**
+ * @name Repoblar#populateChild
+ * @method
+ * @param {Object} el element type SELECT 
+ * @param {string} value get options by this value
+ * @returns this
+ */
+Repoblar.prototype.getData = function(el, value){
+    let elementData = this.getData(el);
+    let result= {};
+    if(elementData.type=='json'){
+      result = window[elementData.source][value];
+    }else if(elementData.type=='xht'){
+     let requestData = new FormData();
+         requestData.append(elementData.key, value)
+      let xhr = new XMLHttpRequest();
+      xhr.open('POST', elementData.source, true);
+      xhr.onload = function () {
+        return this.responseText;
+     };
+     xhr.send(requestData);
+    }
+    
 };
 
 /**
@@ -60,12 +87,11 @@ Repoblar.prototype.bindAll = function(){
  * @param {Object|null} parent Parent node, null if root
  * @returns this
  */
-Repoblar.prototype.getData = function(el, parent){
+Repoblar.prototype.getData = function(el){
      return {
-       self: el,
-       parent: parent,
-       type: document.getElementobject.getAttribute('data-type'),//json/hxr/id
+       type: document.getElementobject.getAttribute('data-type'),//json/url
        source: document.getElementobject.getAttribute('data-source'),
+       key: document.getElementobject.getAttribute('data-key'),
        parameters: el.getAttribute('data-parameters'),
        child:el.getAttribute('data-child')
       };
