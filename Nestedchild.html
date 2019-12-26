@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+
+        let birds = [
+            {
+                id: "001",
+                text: "Eurasian Collared-Dove"
+            },
+            {
+                id: "002",
+                text: "Bald Eagle"
+            },
+            {
+                id: "003",
+                text: "Cooper's Hawk"
+            },
+        ];
+
+        let trees = [
+            {
+                id: "001",
+                text: "trees Collared-Dove"
+            },
+            {
+                id: "002",
+                text: "trees Eagle"
+            },
+            {
+                id: "003",
+                text: "trees's Hawk"
+            },
+        ];
+
+        window.selectores = {'birds': birds, 'trees': trees};
+
+
+        /**
+         * @fileOverview Constructor Repo
+         * @author <a href="mailto:mitridates@gmail.com">Mitridates</a>
+         * @version 1.0
+         */
+
+        /**
+         *
+         * @class Clase para poblar nested select
+         * @constructor
+         * @name Repo
+         * @param {*} selector
+         */
+        function Repo(selector) {
+            this.root  =  (typeof selector === "object" )? selector : document.querySelector(selector);
+            if(this.root==null || this.root.tagName.toLowerCase()!=='select'){
+                console.log('Tipo de selector equivocado "'+  selector +'", se esperaba "SELECT"');
+            }
+        }
+
+        /**
+         * @name Repo#getChild
+         * @method
+         * @param {Object} el element type SELECT
+         * @returns {string|null}
+         */
+        Repo.prototype.getChild = function(el){
+            return el.getAttribute('data-child') ?  document.querySelector(el.getAttribute('data-child')) : null;
+        };
+
+        /**
+         * @name Repo#bindCascade
+         * @method
+         * @param {Object} el element type SELECT
+         * @param {Object|null} parent Parent node, null if root
+         * @returns this
+         */
+        Repo.prototype.bindAll = function(){
+            let $this = this;
+            let addEvent = function(el, child){
+                el.addEventListener("change", function() {
+                    child.length=0;
+                    if(el.options[el.selectedIndex].value===''){
+                        return;
+                    }else{
+                        $this.populateChild(child, el.options[el.selectedIndex].value)
+                    }
+                });
+            }
+            let el = this.root;
+            while (this.getChild(el)!=null) {
+                addEvent(el, this.getChild(el));
+                el = this.getChild(el);
+            }
+            return this;
+        };
+
+
+        /**
+         * @name Repo#populateChild
+         * @method
+         * @param {Object} el element type SELECT
+         * @param {string} value get options by this value
+         * @returns this
+         */
+        Repo.prototype.populateChild = function(el, value){
+            let elementDataattr = this.getDataAttr(el);
+            let $this = this;
+            switch (elementDataattr.type) {
+                case 'json':
+                    this.setOptions(el, window[elementDataattr.source][value]);
+                    break;
+                case 'xht':
+                    let requestData = new FormData();
+                    requestData.append(elementDataattr.key, value);
+                    let xhr = new XMLHttpRequest();
+                    xhr.open('POST', elementDataattr.source, true);
+                    xhr.onload = function () {
+                        $this.setOptions(el, this.data);
+                    };
+                    xhr.send(requestData);
+                    break;
+                default:
+                    ;
+            }
+            return this;
+        };
+
+
+        /**
+         * @name Repo#setOptions
+         * @method
+         * @param {Object} el element type SELECT
+         * @param {Array} data array({id: x, value:y},...)
+         * @returns this
+         */
+        Repo.prototype.setOptions = function(el, data){
+            for (let i = 0; i < data.length; i++) {
+                let option = document.createElement('option');
+                option.text = data[i].text;
+                option.value = data[i].id;
+                el.add(option);
+            }
+        };
+
+        /**
+         * @name Repo#getSelector
+         * @method
+         * @param {Object} el element type SELECT
+         * @returns this
+         */
+        Repo.prototype.getDataAttr = function(el){
+            return {
+                type: el.getAttribute('data-type'),//json/url
+                source: el.getAttribute('data-source'),
+                key: el.getAttribute('data-key'),//if request: url?key=value
+                parameters: el.getAttribute('data-parameters'),//if request {add parameters to request}
+                child:el.getAttribute('data-child'),//
+                emptyOption: el.getAttribute('data-emptyOption'),//string
+            };
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let repo = new Repo('#cacota');
+            repo.bindAll();
+        });
+
+
+
+    </script>
+
+</head>
+<body>
+
+
+<select id="cacota" data-child="#chiquitin">
+    <option value="birds">birds</option>
+    <option value="trees">trees</option>
+</select>
+
+
+<select id="chiquitin"
+        data-type="json"
+        data-source="selectores"
+        data-emptyOption="Seleccione chiquitin"
+></select>
+
+</body>
+</html>
