@@ -19,10 +19,9 @@
      * @returns self
      */
     disable: function(dsbl){
-        let obs = methods.toArray.apply(this), lngth =  obs.length;
-        for(var i = 0; i< lngth; i++){
-            obs[i].disabled = typeof dsbl === "boolean" ? dsbl :  !obs[i].disabled;
-        }
+    	[].map.call(methods.toArray.apply(this), function(obj) {
+			obj.disabled = typeof dsbl === "boolean" ? dsbl :  !obj.disabled;
+    	});
         return this;
     },
    /**
@@ -33,26 +32,10 @@
     * @returns self
     */
        clear: function(){
-        let _clear = function (e) {
-           e.classList.contains('select2')?  $(e).val(null).trigger('change') : e.value = '';
-           $(e).removeAttr('checked').removeAttr('selected');
-        }
-
-        if($(this).is('input, select, checkbox')){//es 1-n objetos : [selector, ...]
-
-          $(this._selector).each(function () {
-              _clear(this);
-          });
-
-        }else{ //todos los chids input dentro de un elemento del dom
-
-            $(':input', this._selector)
-                .not(':button, :submit, :reset, :hidden')
-                .each(function () {
-                _clear(this);
-            });
-        }
-        //        $(this._selector).find('input:radio, input:checkbox, input[type=text], input[type=password], input[type=file], select, textarea').val('');//select selectivo
+    	[].map.call(methods.toArray.apply(this), function(obj) {
+               obj.classList.contains('select2')?  $(obj).val(null).trigger('change') : obj.value = '';
+               $(obj).removeAttr('checked').removeAttr('selected');
+       });
         return this;
     },
        
