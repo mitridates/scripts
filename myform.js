@@ -10,7 +10,7 @@
          */
         toArray : function( ) {  
             let notin = [':button', ':submit', ':reset', ':hidden'], arr = [];
- 			$(':input', this).not(notin.join(', ')).each( function(){ arr.push(this); });
+            $(':input', this).not(notin.join(', ')).each( function(){ arr.push(this); });
             return arr;
         },
     /**
