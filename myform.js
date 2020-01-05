@@ -33,9 +33,19 @@ var methods = {
 		return this;
     	},
 	submit(url, jsonParams, callback){
-		let $this= this, fd = (this[0].tagName=='FORM') new FormData(this[0]) : new FormData();
+		let $this= this;
+		if(this[0].tagName=='FORM'){
+			let fd= new FormData(this[0]);
+		}else{
+			//mal
+		 	let fd= new FormData();
+			[].map.call(methods.toArray.apply(this), function(obj) {
+				fd .append(obj.name, obj.value);
+			});
+		}
+		fd = (this[0].tagName=='FORM') new FormData(this[0]) : new FormData();
 		for ( var key in jsonParams||{} ) {
-			formData.append(key, jsonParams[key]);
+			fd .append(key, jsonParams[key]);
 		}
 		//Grot.spinner.show();
 		$.ajax({
