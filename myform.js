@@ -33,20 +33,16 @@ var methods = {
 		return this;
     	},
 	submit(url, jsonParams, callback){
-		let $this= this;
-		if(this[0].tagName=='FORM'){
-			let fd= new FormData(this[0]);
-		}else{
-			//mal
-		 	let fd= new FormData();
-			[].map.call(methods.toArray.apply(this), function(obj) {
-				fd .append(obj.name, obj.value);
-			});
-		}
-		fd = (this[0].tagName=='FORM') new FormData(this[0]) : new FormData();
-		for ( var key in jsonParams||{} ) {
-			fd .append(key, jsonParams[key]);
-		}
+		let $this= this, data = {};
+		[].map.call(methods.toArray.apply(this), function(obj) {
+			if(obj.type=='checkbox'){
+				data[obj.name]= obj.checked;
+			}else{
+				data[obj.name]= obj.value;
+			}
+		});
+		$.extend(data, jsonParams||{}):
+		
 		//Grot.spinner.show();
 		$.ajax({
 			url: url,
