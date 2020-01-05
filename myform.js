@@ -31,7 +31,30 @@ var methods = {
 		$(obj).removeAttr('checked').removeAttr('selected');
 		});
 		return this;
-    }       
+    	},
+	submit(url, jsonParams, callback){
+		let $this= this, fd = (this[0].tagName=='FORM') new FormData(this[0]) : new FormData();
+		for ( var key in jsonParams||{} ) {
+			formData.append(key, jsonParams[key]);
+		}
+		//Grot.spinner.show();
+		$.ajax({
+			url: url,
+			type: "POST",
+			cache: false,
+			data: fd,
+			processData: false,  // tell jQuery not to process the data
+			contentType: false,   // tell jQuery not to set contentType+
+			success: function(data){
+				//Grot.spinner.hide();
+				if(typeof callback===  'function'){
+					callback.call($this, data);
+				}				
+			}
+			return this;
+		});
+		
+	}
     };
 
     $.fn.myform = function(method) {
