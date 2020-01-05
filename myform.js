@@ -1,11 +1,8 @@
 (function( $ ){
 
-var methods =
-	init : function(options) {
-		//??
-	},
+var methods = {
 	/**
-	 * Retorna el objeto/objetos input de un selector como array
+	 * jquery :input Selects all input, textarea, select and button elements
 	 * @returns {Array}
 	 */
 	toArray : function( ) {  
@@ -14,10 +11,10 @@ var methods =
 	    return arr;
 	},
 	/**
-	* Enable/disable childNodes
-	* @param {bool|null} dsbl
-	* @returns self
-	*/
+	 * Toggle/set disable true/false
+	 * @param {bool|null} dsbl
+	 * @returns self
+	 */
 	disable: function(dsbl){
 		[].map.call(methods.toArray.apply(this), function(obj) {
 				obj.disabled = typeof dsbl === "boolean" ? dsbl :  !obj.disabled;
@@ -25,10 +22,7 @@ var methods =
 		return this;
 	},
 	/**
-	 * Clear form/childs node values
-	 * @example :
-	 *           ('#form, #formid2, ...').myform('clear')
-	 *           Grot('#tableid').form('clear')
+	 * Clear input, checkbox, select...
 	 * @returns self
 	 */
 	clear: function(){
@@ -37,18 +31,14 @@ var methods =
 		$(obj).removeAttr('checked').removeAttr('selected');
 		});
 		return this;
-    },
-       
+    }       
     };
 
     $.fn.myform = function(method) {
         if ( methods[method] ) {
             return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
-        } else if ( typeof method === 'object' || ! method ) {
-            // Default to "init"
-            return methods.init.apply( this, arguments );
-        } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.tooltip' );
+        }else{
+            $.error( 'Method ' +  method + ' does not exist on jQuery.myform' );
         }    
     };
 })( jQuery );
