@@ -9,20 +9,8 @@
          * @returns {Array}
          */
         toArray : function( ) {  
-         let types = ['input', 'select', 'checkbox', 'select'],
-             notin = [':button', ':submit', ':reset', ':hidden'],
-             arr = [];
-             if($(this).is(types.join(', '))){//es 1-n objetos : [selector, ...]
-                $(this).each(function () {
-                    arr.push(this);
-                });
-            }else{ //todos los chids input dentro de un elemento del dom
-                $(':input', this)
-                    .not(notin.join(', '))
-                    .each(function () {
-                        arr.push(this);
-                    });
-            }
+            let notin = [':button', ':submit', ':reset', ':hidden'], arr = [];
+ 			$(':input', this).not(notin.join(', ')).each( function(){ arr.push(this); });
             return arr;
         },
     /**
