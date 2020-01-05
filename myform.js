@@ -32,7 +32,7 @@ var methods = {
 		});
 		return this;
     	},
-	submit(url, jsonParams, callback){
+	submit(url, callback, jsonParams){
 		let $this= this, data = {};
 		[].map.call(methods.toArray.apply(this), function(obj) {
 			if(obj.type=='checkbox'){
@@ -41,7 +41,8 @@ var methods = {
 				data[obj.name]= obj.value;
 			}
 		});
-		$.extend(data, jsonParams||{}):
+		
+		$.extend(data, jsonParams||{});
 		
 		//Grot.spinner.show();
 		$.ajax({
