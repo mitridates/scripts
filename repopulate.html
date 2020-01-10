@@ -99,24 +99,31 @@
          * @param {Object|null} parent Parent node, null if root
          * @returns this
          */
-        Repopulate.prototype.bindAll = function(){
-            let $this = this;
-            let addEvent = function(el, child){
-                el.addEventListener("change", function() {
-                    $this.clearChild(child, true);
-                    if(el.options[el.selectedIndex].value===''){
+        Repopulate.prototype.bindAll = function(elem){
+            let matches, i=0, 
+                elem = elem||this.root,
+                childNodes= this.getChild(elem), 
+                $this = this,
+                addEvent = function(elem, child){
+                    elem.addEventListener("change", function() {
+                        $this.clearChild(child, true);
+                        if(elem.options[elem.selectedIndex].value===''){
+                            return;
+                        }else{
+                            $this.populateChild(child, elem.options[elem.selectedIndex].value)
+                        }
                         return;
-                    }else{
-                        $this.populateChild(child, el.options[el.selectedIndex].value)
-                    }
-                    return;
-                });
-            }
+                    });
+                };
 
-            let el = this.root;
-            while (this.getChild(el)!=null) {
+            for(; i<childNodes.length; i++){
+                
+            }
+            while (childNodes.length!==0) {
+                
                 addEvent(el, this.getChild(el));
-                el = this.getChild(el);
+                elem = this.getChild(el);
+                childNodes = this.getChild(elem);
             }
             return this;
         };
@@ -140,7 +147,11 @@
          * @returns this
          */
         Repopulate.prototype.populateChild = function(el, value){
-            let attr = this.getDataAttr(el), $this = this, formdata = this.buildQueryPost(attr, value), xhr = new XMLHttpRequest();
+            let attr = this.getDataAttr(el), 
+                $this = this, 
+                formdata = this.buildQueryPost(attr, value), 
+                xhr = new XMLHttpRequest();
+          
             xhr.open('POST', attr.url, true);
             xhr.onload = function () {
                 $this.setOptions(el, $this.emitter.emit('ev.onLoadResponse', this, el, attr)[0] || this.response, attr);
@@ -176,8 +187,9 @@
          * @return {FormData} data to post
          */
         Repopulate.prototype.buildQueryPost = function(attr, value){
-            let data = new FormData(), parameters = JSON.parse(attr.parameters)||{};
-
+            let data = new FormData(), 
+                parameters = JSON.parse(attr.parameters)||{};
+            
             data.append(attr.querykey, value);
 
             for (let key in parameters) data.append(key, parameters[key]);
