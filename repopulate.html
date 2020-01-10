@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        /* Polyfill EventEmitter. */
+        function EventEmitter() {
+            this.listeners = {};
+        };
+
+        /**
+         * @name Repopulate#on
+         * @method
+         * @param {string} event
+         * @param {function} listener
+         */
+        EventEmitter.prototype.on = function (event, listener) {
+            if (typeof this.listeners[event] !== 'object') {
+                this.listeners[event] = [];
+            }
+            this.listeners[event].push(listener);
+            return this;
+        };
+
+        EventEmitter.prototype.removeListener = function (event, listener) {
+            let lis = this.listeners[event];
+            if (!lis) return this;
+            for(let i = lis.length; i > 0; i--) {
+                if (lis[i] === listener) {
+                    lis.splice(i,1);
+                    break;
+                }
+            }
+            return this;
+        };
+
+        EventEmitter.prototype.off = function (event, listener) {
+            return this.removeListener(event, listener);
+        };
+
+        EventEmitter.prototype.emit = function (event) {
+            let data= [], result, i, listeners, length, args = [].slice.call(arguments, 1);
+
+            if (typeof this.listeners[event] === 'object') {
+                listeners = this.listeners[event].slice();
+                length = listeners.length;
+
+                for (i = 0; i < length; i++) {
+                    result = listeners[i].apply(this, args);
+                    if(typeof result!== "undefined") data.push(result);
+                }
+                return data;
+            }
+        };
+
+        EventEmitter.prototype.once = function (event, listener) {
+            this.on(event, function g () {
+                this.removeListener(event, g);
+                listener.apply(this, arguments);
+            });
+        };
+
+
+
+        /**
+         *
+         * @class Clase para poblar nested select
+         * @constructor
+         * @name Repopulate
+         * @param {string|Object} selector
+         */
+        function Repopulate(selector) {
+            this.root  =  (typeof selector === "object" )? selector : document.querySelector(selector);
+            this.listeners = {};
+            this.emitter = new EventEmitter();
+            if(this.root==null || this.root.tagName.toLowerCase()!=='select'){
+                console.log('Tipo de selector equivocado "'+  selector +'", se esperaba "SELECT"');
+            }
+
+        }
+
+        Repopulate.prototype.on = function (event, listener) {
+            this.emitter.on(event, listener);
+        };
+
+        /**
+         * @name Repopulate#getChild
+         * @method
+         * @param {Object} el element type SELECT
+         * @returns {Object|Array|null} Child/s
+         */
+        Repopulate.prototype.getChild = function(el){
+            return document.querySelector(el.getAttribute('data-child'));
+        };
+
+        /**
+         * @name Repopulate#bindCascade
+         * @method
+         * @param {Object} el element type SELECT
+         * @param {Object|null} parent Parent node, null if root
+         * @returns this
+         */
+        Repopulate.prototype.bindAll = function(){
+            let $this = this;
+            let addEvent = function(el, child){
+                el.addEventListener("change", function() {
+                    $this.clearChild(child, true);
+                    if(el.options[el.selectedIndex].value===''){
+                        return;
+                    }else{
+                        $this.populateChild(child, el.options[el.selectedIndex].value)
+                    }
+                    return;
+                });
+            }
+
+            let el = this.root;
+            while (this.getChild(el)!=null) {
+                addEvent(el, this.getChild(el));
+                el = this.getChild(el);
+            }
+            return this;
+        };
+
+        /**
+         * @name Repopulate#clearChild
+         * @method
+         * @param {Object} el element type SELECT
+         * @param {boolean} deep
+         * @returns this
+         */
+        Repopulate.prototype.clearChild = function(el, deep){
+            el.options.length=0;
+            if(deep && this.getChild(el)!=null) this.clearChild(this.getChild(el), true);
+        };
+        /**
+         * @name Repopulate#populateChild
+         * @method
+         * @param {Object} el element type SELECT
+         * @param {string} value get options by this value
+         * @returns this
+         */
+        Repopulate.prototype.populateChild = function(el, value){
+            let attr = this.getDataAttr(el), $this = this, formdata = this.buildQueryPost(attr, value), xhr = new XMLHttpRequest();
+            xhr.open('POST', attr.url, true);
+            xhr.onload = function () {
+                $this.setOptions(el, $this.emitter.emit('ev.onLoadResponse', this, el, attr)[0] || this.response, attr);
+            };
+            xhr.send(formdata);
+
+            return this;
+        };
+
+
+        // /**
+        //  * Build a query string from an object of data
+        //  * @param  {Object} data The data to turn into a query string
+        //  * @return {String}      The query string
+        //  */
+        // Repopulate.prototype.buildQueryGet = function(data){
+        //     let query = [];
+        //
+        //     if (typeof (data) === 'string') return data;
+        //
+        //     for (let key in data) {
+        //         if (data.hasOwnProperty(key)) {
+        //             query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+        //         }
+        //     }
+        //     return query.join('&');
+        // };
+
+        /**
+         * Build Post Data
+         * @param  {JSON} Object attributes
+         * @param  {string} query value
+         * @return {FormData} data to post
+         */
+        Repopulate.prototype.buildQueryPost = function(attr, value){
+            let data = new FormData(), parameters = JSON.parse(attr.parameters)||{};
+
+            data.append(attr.querykey, value);
+
+            for (let key in parameters) data.append(key, parameters[key]);
+
+            return data;
+        };
+
+        /**
+         * @name Repopulate#setOptions
+         * @method
+         * @param {Object} el element type SELECT
+         * @param {Array} data array({id: x, value:y},...)
+         * @param {string|null} returnFormat string(key,value)
+         * @returns this
+         */
+        Repopulate.prototype.setOptions = function(el, data, attr){
+            if(!data.length) return;
+
+            let keys= (typeof attr.returnFormat === "string")? attr.returnFormat.split(',') : [Object.keys(data[0])[0], Object.keys(data[0])[1]];
+
+            if(attr.emptyOption){
+                let option = document.createElement('option');
+                option.text = attr.emptyOption;
+                el.add(option);
+            }
+
+            for (let i = 0; i < data.length; i++) {
+                let option = document.createElement('option');
+                option.text = data[i][keys[0]];
+                option.value = data[i][keys[1]];
+                el.add(option);
+            }
+        };
+
+        /**
+         * @name Repopulate#getSelector
+         * @method
+         * @param {Object} el element type SELECT
+         * @returns this
+         */
+        Repopulate.prototype.getDataAttr = function(el){
+            return {
+                url: el.getAttribute('data-url'), //url | window[json=VariableName] | function.call(this, parameter)
+                querykey: el.getAttribute('data-querykey'),//if request: url?querykey=ParentSelectorValue
+                parameters: el.getAttribute('data-parameters'),//json enconded parameters key=value
+                child:el.getAttribute('data-child'),//
+                emptyOption: el.getAttribute('data-emptyOption'),//string
+                returnFormat: el.getAttribute('data-returnFormat'),//return format keys names "textName,valueName"
+            };
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let repo = new Repopulate('#country');
+
+            repo.on('ev.onLoadResponse', (data, el, attr)=>{
+                return JSON.parse(data.response).out;//return corrent part of response
+            });
+            repo.bindAll();
+
+        });
+
+
+
+    </script>
+
+</head>
+<body>
+
+
+<select id="country" data-child="#admin1">
+    <option value="">Seleccione país</option>
+    <option value="es">España</option>
+    <option value="au">Australia</option>
+</select>
+
+
+<select id="admin1" data-child="#admin2"
+        data-url="{{ path('cave_backend_json_admin1') }}"
+        data-querykey="countryid"
+{#        data-returnformat="text,id"#}
+        data-emptyOption="Seleccione admin1"
+        data-parameters='{"format":"select2"}'#}
+></select>
+
+<select id="admin2" data-child="#admin3"
+        data-url="{{ path('cave_backend_json_admin2') }}"
+        data-querykey="admin1id"
+        {#        data-returnformat="text,id"#}
+        data-emptyOption="Seleccione admin2"
+        {#        data-parameters='{"format":"select2"}'#}
+></select>
+
+<select id="admin3"
+        data-url="{{ path('cave_backend_json_admin3') }}"
+        data-querykey="admin2id"
+        {#        data-returnformat="text,id"#}
+        data-emptyOption="Seleccione admin3"
+        {#        data-parameters='{"format":"select2"}'#}
+></select>
+
+
+</body>
+</html>
