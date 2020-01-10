@@ -100,9 +100,9 @@
          * @returns this
          */
         Repopulate.prototype.bindAll = function(elem){
-            let matches, i=0, 
+            let nodeItem, childNodelist, , j=0, i=0,  
                 elem = elem||this.root,
-                childNodes= this.getChild(elem), 
+                nodeList= document.querySelectorAll(elem.getAttribute('data-child')), //NodeList estatica 
                 $this = this,
                 addEvent = function(elem, child){
                     elem.addEventListener("change", function() {
@@ -115,10 +115,29 @@
                         return;
                     });
                 };
-
-            for(; i<childNodes.length; i++){
+            
+            //loop element NodeList
+            for(; i<nodeList.length; i++)
+            {
+                nodeItem = nodeList[i];
+                addEvent(elem, nodeItem);
+                childNodelist = document.querySelectorAll(nodeItem.getAttribute('data-child'));
+                while()
+                {
+                   
+                    
+                }
                 
             }
+
+                //addEvent(elem, item);
+                //ChildNodeList= document.querySelectorAll(item.getAttribute('data-child'));
+                //if(ChildNodeList.length){
+                //    for(; j<ChildNodeList.length; j++)
+                //    {
+                //    }
+                //}
+            
             while (childNodes.length!==0) {
                 
                 addEvent(el, this.getChild(el));
