@@ -42,16 +42,16 @@
     };
 
     /**
-     * Trigger postLoad actions.
+     * Run postLoad actions.
      */
     Menuloader.prototype.triggerPostloadActions= function(menuItem, dataTarget, reload)
-    {
-        menuItem.dataset.loaded = "true";
-        for(let i=0; i<this.postloadAction.length; i++){
+    {      
+        let i;
+        for(i=0; i<this.postloadAction.length; i++){
             this.postloadAction[i](dataTarget, this.menu, menuItem, reload);
         }
         if(this.itemPostloadAction.hasOwnProperty(menuItem.hash)){
-            for(let i=0; i<this.itemPostloadAction[menuItem.hash].length; i++){
+            for(i=0; i<this.itemPostloadAction[menuItem.hash].length; i++){
                 this.itemPostloadActionn[menuItem.hash][i](dataTarget, this.menu, menuItem, reload);
             }
         }
@@ -74,37 +74,23 @@
     /**
      * Load/reload div
      * @param {Object} menuItem Menú link
-     * @param {boolean} [reload] reload tab?
+     * @param {boolean} [async] Is asynchronous loaded
+     * @param {boolean} [reload] reload content
      */
-    Menuloader.prototype.load= function(menuItem, reload)
+    Menuloader.prototype.load= function(menuItem, async, reload)
     {
-        let dataTarget  = document.querySelector(menuItem.hash) ;
+        let dataTarget  = document.querySelector(menuItem.hash),        
         $this = this;
+        
         if(typeof dataTarget === 'undefined'){
             console.log('Target hash ID desconocido: '+ menuItem.hash);
             return false;
         }
         
+        // Update history
         //window.history.pushState(null, null, menuItem.href);
         
         document.location.hash = menuItem.hash;
-        
-        let updateContent = function()
-        {
-            menuItem.dataset.loaded = "true";
-            for(let i=0; i<$this.postloadAction.length; i++){
-                $this.postloadAction[i](dataTarget, $this.menu, menuItem, reload);
-            }
-            if(this.itemPostloadAction.hasOwnProperty(menuItem.hash)){
-                for(let i=0; i<$this.itemPostloadAction[menuItem.hash].length; i++){
-                    $this.itemPostloadActionn[menuItem.hash][i](dataTarget, $this.menu, menuItem, reload);
-                }
-            }
-        };
-        
-        if(reload || menuItem.dataset.loaded !== "true"){
-            updateContent();
-        }
         
 //        if(!dataTarget.dataset.path && menuItem.dataset.loaded !== "true"){
 //            updateContent();
@@ -112,9 +98,17 @@
 //            dataTarget.innerHTML= '<div class="text-center">{{'loading'|trans({},'cavemessages')|raw}}</div>';
 //            Grot(dataTarget).loader({}, {'success': updateContent});
 //        }
+        
+        // Update menuItems
+        menuItem.dataset.loaded = "true";
         this.menu.querySelector('.active').classList.remove('active')
         menuItem.classList.add('active');
         this.lastActiveMenuItem = menuItem
+        
+        // Update menuContent
+        if(reload || menuItem.dataset.loaded !== "true"){
+            this.triggerPostloadActions(menuItem, dataTarget, reload)
+        }
         this.showData(dataTarget);
     };
 
