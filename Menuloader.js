@@ -19,6 +19,7 @@
     /**
      * Add callback before loading div
      * @param {Function} func(dataTarget, menu, menuItem, reload)
+     * @param {boolean} [async] Is asyncronous 
      * @return self
      */
     Menuloader.prototype.addPreLoadAction= function(func, async)
@@ -111,12 +112,6 @@
 //            Grot(dataTarget).loader({}, {'success': updateContent});
 //        }
         
-        // Update menuItems
-        menuItem.dataset.loaded = "true";
-        this.menu.querySelector('.active').classList.remove('active')
-        menuItem.classList.add('active');
-        this.lastActiveMenuItem = menuItem
-        
         /**
          * Como cojones hago lo de la carga asíncrona...
          */
@@ -124,6 +119,14 @@
         if(reload || menuItem.dataset.loaded !== "true"){
             this.triggerPostloadActions(menuItem, dataTarget, reload)
         }
+        
+        // Update menuItems
+        menuItem.dataset.loaded = "true";
+        this.menu.querySelector('.active').classList.remove('active')
+        menuItem.classList.add('active');
+        this.lastActiveMenuItem = menuItem
+        
+   
         this.showData(dataTarget);
     };
 
@@ -144,6 +147,10 @@
          */
         let menuloader = new  Menuloader(document.getElementById('menuItems'), document.getElementById('menuContent'));
         window.menuloader = menuloader;
+        
+        menuloader.addPreLoadAction(function (dataTarget, menu, menuItem, reload){}, true)
+        
+        
         menuloader.addPostLoadAction(function (dataTarget, menu, menuItem, reload) {
             Grot.fn.init();
             {%set selectors = ['organisation', 'mapserie', 'person', 'article', 'cave', 'specie']%}{#'map',#}
