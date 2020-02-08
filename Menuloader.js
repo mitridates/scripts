@@ -11,12 +11,24 @@
         this.menu  = menu;
         this.targetsContainer = targetsContainer;
         this.postloadAction = [];
+        this.preloadAction = [];
         this.itemPostloadAction = {};
         this.lastActiveMenuItem= false;
     }
 
     /**
-     * Run before load any target div
+     * Add callback before loading div
+     * @param {Function} func(dataTarget, menu, menuItem, reload)
+     * @return self
+     */
+    Menuloader.prototype.addPreLoadAction= function(func, async)
+    {
+        this.preloadAction.push({async: async, callback: func});
+        return this;
+    };
+
+    /**
+     * Run after loading div
      * @param {Function} func(dataTarget, menu, menuItem, reload)
      * @return self
      */
@@ -27,7 +39,7 @@
     };
 
     /**
-     * Run before load any target div
+     * Run after loading div
      * @param {string} menuItem menu id
      * @param {Function} func(dataTarget, menu, menuItem, reload)
      * @return self
@@ -42,7 +54,7 @@
     };
 
     /**
-     * Run postLoad actions.
+     * Run postLoad after loading div.
      */
     Menuloader.prototype.triggerPostloadActions= function(menuItem, dataTarget, reload)
     {      
@@ -59,7 +71,7 @@
     };
 
     /**
-     * show data
+     * Show data
      * @param {Object} dataTarget data div container
      */
     Menuloader.prototype.showData= function(dataTarget)
