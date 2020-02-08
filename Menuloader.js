@@ -117,6 +117,9 @@
         menuItem.classList.add('active');
         this.lastActiveMenuItem = menuItem
         
+        /**
+         * Como cojones hago lo de la carga asíncrona...
+         */
         // Update menuContent
         if(reload || menuItem.dataset.loaded !== "true"){
             this.triggerPostloadActions(menuItem, dataTarget, reload)
