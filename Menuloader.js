@@ -9,73 +9,25 @@
      */
     function Menuloader (menu, targetsContainer) {
         this.menu  = menu;
+        this.menuItemsSelector= 'a';
         this.targetsContainer = targetsContainer;
-        this.postloadAction = [];
-        this.preloadAction = [];
-        this.itemPostloadAction = {};
         this.lastActiveMenuItem= false;
     }
 
     /**
-     * Add callback before loading div
-     * @param {Function} func(dataTarget, menu, menuItem, reload)
-     * @param {boolean} [async] Is asyncronous 
-     * @return self
+     * Get menu items
+     * return {NodeList}
      */
-    Menuloader.prototype.addPreLoadAction= function(func, async)
+    Menuloader.prototype.getMenuItems= function()
     {
-        this.preloadAction.push({async: async, callback: func});
-        return this;
-    };
-
-    /**
-     * Run after loading div
-     * @param {Function} func(dataTarget, menu, menuItem, reload)
-     * @return self
-     */
-    Menuloader.prototype.addPostLoadAction= function(func)
-    {
-        this.postloadAction.push(func);
-        return this;
-    };
-
-    /**
-     * Run after loading div
-     * @param {string} menuItem menu id
-     * @param {Function} func(dataTarget, menu, menuItem, reload)
-     * @return self
-     */
-    Menuloader.prototype.addItemPostLoadAction= function(menuItem, func)
-    {
-        if(!this.itemPostloadAction.hasOwnProperty(menuItem)){
-            this.itemPostloadAction[menuItem]= [];
-        }
-        this.itemPostloadAction[menuItem].push(func);
-        return this;
-    };
-
-    /**
-     * Run postLoad after loading div.
-     */
-    Menuloader.prototype.triggerPostloadActions= function(menuItem, dataTarget, reload)
-    {      
-        let i;
-        for(i=0; i<this.postloadAction.length; i++){
-            this.postloadAction[i](dataTarget, this.menu, menuItem, reload);
-        }
-        if(this.itemPostloadAction.hasOwnProperty(menuItem.hash)){
-            for(i=0; i<this.itemPostloadAction[menuItem.hash].length; i++){
-                this.itemPostloadActionn[menuItem.hash][i](dataTarget, this.menu, menuItem, reload);
-            }
-        }
-        return this;
-    };
-
+        return document.querySelectorAll(this.menuItemsSelector);
+    };  
+    
     /**
      * Show data
      * @param {Object} dataTarget data div container
      */
-    Menuloader.prototype.showData= function(dataTarget)
+    Menuloader.prototype.showContainerDiv= function(dataTarget)
     {
         for (let i = 0; i < this.targetsContainer.children.length; i++) {
             let e = this.targetsContainer.children[i];
@@ -87,10 +39,9 @@
     /**
      * Load/reload div
      * @param {Object} menuItem Menú link
-     * @param {boolean} [async] Is asynchronous loaded
      * @param {boolean} [reload] reload content
      */
-    Menuloader.prototype.load= function(menuItem, async, reload)
+    Menuloader.prototype.load= function(menuItem)
     {
         let dataTarget  = document.querySelector(menuItem.hash),        
         $this = this;
@@ -104,30 +55,13 @@
         //window.history.pushState(null, null, menuItem.href);
         
         document.location.hash = menuItem.hash;
-        
-//        if(!dataTarget.dataset.path && menuItem.dataset.loaded !== "true"){
-//            updateContent();
-//        }else if(reload || menuItem.dataset.loaded !== "true"){
-//            dataTarget.innerHTML= '<div class="text-center">{{'loading'|trans({},'cavemessages')|raw}}</div>';
-//            Grot(dataTarget).loader({}, {'success': updateContent});
-//        }
-        
-        /**
-         * Como cojones hago lo de la carga asíncrona...
-         */
-        // Update menuContent
-        if(reload || menuItem.dataset.loaded !== "true"){
-            this.triggerPostloadActions(menuItem, dataTarget, reload)
-        }
-        
+
         // Update menuItems
         menuItem.dataset.loaded = "true";
         this.menu.querySelector('.active').classList.remove('active')
         menuItem.classList.add('active');
         this.lastActiveMenuItem = menuItem
-        
-   
-        this.showData(dataTarget);
+        this.showContainerDiv(dataTarget);
     };
 
     /**
