@@ -1,38 +1,48 @@
 /**
  * Create complex navigation menu
  * @class MenuToggle
- * @param {String} menu Parent container ID for menu items
+ * @param {String} menuId Top container ID for menu items
  * @param {Object} options Options to initialize the component with
  */
-function MenuToggle (menu, options) {
+function MenuToggle (menuId, options) {
 
-    this.menu  = document.getElementById(menu);
-    //https://stackoverflow.com/questions/10490713/how-to-document-the-properties-of-the-object-in-the-jsdoc-3-tag-this
-    //https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Object/defineProperty
-    // /**
-    //  Menu targets from hash items
-    //  @name MenuToggle#dataTargets
-    //  @type Array
-    //  */
-    // Object.defineProperty(this, 'dataTargets', {
-    //     value: [],
-    //     set(v) {
-    //     }
-    // });
-    //this.dataTargets= ;
-    this.targetsContainer = document.getElementById(this.menu.dataset.container);
+    this.menuContainer  = document.getElementById(menuId);
+    
     /**
-     This event emitter
-     @name MenuToggle#emitter
-     @type Object
-     @default null
+     * Event emitter
+     * @name MenuToggle#emitter
+     * @type Object
      */
-   // this.emitter = (!EventEmitter && typeof EventEmitter != 'function')? null :  new EventEmitter();
     Object.defineProperty(this, 'emitter', {
         value: (!EventEmitter && typeof EventEmitter != 'function')? null :  new EventEmitter(),
         writable: false
-    });
-    if (!this.targetsContainer ) throw new DOMException('Undefined menu destination container')
+    });    
+    
+    
+    
+    //https://stackoverflow.com/questions/10490713/how-to-document-the-properties-of-the-object-in-the-jsdoc-3-tag-this
+    //https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Object/defineProperty
+    /**
+     * Div targets from menu items
+     * @name MenuToggle#dataTargets
+     * @type Array
+     */
+     Object.defineProperty(this, 'dataTargets', {
+         value: [],
+         set: function(){
+             let target, 
+                 i=0,
+                 items= this.getMenuNodeList();
+                
+             foreach(; i<items; i++){
+                 items[i]
+             }
+         }
+     });
+    //this.dataTargets= ;
+    //this.targetsContainer = document.getElementById(this.this.menuContainer.dataset.container);
+
+    //if (!this.targetsContainer ) throw new DOMException('Undefined menu destination container')
 }
 
 MenuToggle.prototype = {
@@ -41,8 +51,18 @@ MenuToggle.prototype = {
     activeSelector: 'active',
     getMenuNodeList: function()
     {
+        return this.menuContainer.querySelectorAll(this.menuItemsSelector);
+    },
+    setDataTargets: function()
+    {
+        let i=0,
+            items= this.getMenuNodeList();
+        
+        foreach(; i<items; i++){
+        }
         return this.menu.querySelectorAll(this.menuItemsSelector);
     }
+    
 };
 
 MenuToggle.prototype.on = function (event, listener) {
@@ -107,7 +127,7 @@ MenuToggle.prototype.init= function()
 //  */
 // MenuToggle.prototype.getMenuNodeList= function()
 // {
-//     return this.menu.querySelectorAll(this.menuItemsSelector);
+//     return this.menuContainer.querySelectorAll(this.menuItemsSelector);
 // }
 
 /**
@@ -120,7 +140,7 @@ MenuToggle.prototype.loadHashOrDefault= function()
         source= ['[href="'+window.location.hash+'"]', '.'+this.activeSelector, ''];
 
     for(;i<source.length;i++){
-        menuItem = this.menu.querySelector(this.menuItemsSelector+source[i]);
+        menuItem = this.menuContainer.querySelector(this.menuItemsSelector+source[i]);
         if(menuItem) break;
     }
     menuItem.click();
@@ -140,8 +160,8 @@ MenuToggle.prototype.updateHistory= function()
     let $this= this,
         popstateEvent ={
             handleEvent: function (event) {
-              let currentHistorySelector= $this.menu.querySelector($this.menuItemsSelector+'[href="'+window.location.hash+'"]');
-                  //lastActiveSelector = $this.menu.querySelector('.'+$this.activeSelector);
+              let currentHistorySelector= $this.menuContainer.querySelector($this.menuItemsSelector+'[href="'+window.location.hash+'"]');
+                  //lastActiveSelector = $this.menuContainer.querySelector('.'+$this.activeSelector);
                 $this.show(currentHistorySelector);
             }
         };
@@ -157,7 +177,7 @@ MenuToggle.prototype.updateHistory= function()
 MenuToggle.prototype.show= function(menuItem)
 {
     let el, i=0,
-        previous= this.menu.querySelector('.'+this.activeSelector),
+        previous= this.menuContainer.querySelector('.'+this.activeSelector),
         dataTarget  = document.querySelector(menuItem.hash);
 
     if(typeof dataTarget === "undefined")
