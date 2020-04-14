@@ -9,6 +9,17 @@ function MenuToggle (menuId, options) {
     this.menuContainer  = document.getElementById(menuId);
     
     /**
+     * NodeList elements in menu container
+     * @name MenuToggle#menuNodeList
+     * @type NodeList
+     */
+     Object.defineProperty(this, 'menuItemsNodeList', {
+         set: function(){
+             menuItemsNodeList= this.menuContainer.querySelectorAll(this.menuItemsSelector);
+         }
+     });    
+    
+    /**
      * Event emitter
      * @name MenuToggle#emitter
      * @type Object
@@ -17,8 +28,6 @@ function MenuToggle (menuId, options) {
         value: (!EventEmitter && typeof EventEmitter != 'function')? null :  new EventEmitter(),
         writable: false
     });    
-    
-    
     
     //https://stackoverflow.com/questions/10490713/how-to-document-the-properties-of-the-object-in-the-jsdoc-3-tag-this
     //https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Object/defineProperty
@@ -30,39 +39,19 @@ function MenuToggle (menuId, options) {
      Object.defineProperty(this, 'dataTargets', {
          value: [],
          set: function(){
-             let target, 
-                 i=0,
-                 items= this.getMenuNodeList();
-                
-             foreach(; i<items; i++){
-                 items[i]
+             let i=0,
+                 items= this.menuItemsNodeList;
+             foreach(; i<items.length; i++){
+                 dataTargets.push( document.querySelector(items[i].hash))
              }
          }
      });
-    //this.dataTargets= ;
-    //this.targetsContainer = document.getElementById(this.this.menuContainer.dataset.container);
-
-    //if (!this.targetsContainer ) throw new DOMException('Undefined menu destination container')
 }
 
 MenuToggle.prototype = {
     menuItemsSelector: 'a',
     visitedSelector: 'color-visited',
-    activeSelector: 'active',
-    getMenuNodeList: function()
-    {
-        return this.menuContainer.querySelectorAll(this.menuItemsSelector);
-    },
-    setDataTargets: function()
-    {
-        let i=0,
-            items= this.getMenuNodeList();
-        
-        foreach(; i<items; i++){
-        }
-        return this.menu.querySelectorAll(this.menuItemsSelector);
-    }
-    
+    activeSelector: 'active'
 };
 
 MenuToggle.prototype.on = function (event, listener) {
@@ -75,19 +64,24 @@ MenuToggle.prototype.on = function (event, listener) {
  */
 MenuToggle.prototype.init= function()
 {
-    if(this.getMenuNodeList().length===0) {
-        console.log('Menu elements not found');
-        return;
-    }
-    if(this.emitter) this.emitter.emit('init');
-    let itemListener,
+    let itemListener, menuItem,
         i=0,
         $this= this,
-        itemsNodeList = this.getMenuNodeList();
+        getInitializerItem= function(){
+           if (window.location.hash){
+               return this.menuContainer.querySelector(this.menuItemsSelector+'[href="'+window.location.hash+'"]');
+           }else{
+               return this.menuContainer.querySelector(this.menuItemsSelector+'.'+this.activeSelector); 
+           }else{
+               return null;
+           }
+        };
+    
 
-    for(; i<itemsNodeList.length; i++){
+
+    for(; i<this.menuItemsNodeList.length; i++){
         itemListener = {
-            el: itemsNodeList[i],
+            el: this.menuItemsNodeList[i],
             handleEvent: function (event) {
                 if (event.type === 'click') {
                     if($this.emitter) {
@@ -109,26 +103,15 @@ MenuToggle.prototype.init= function()
             }
         };
 
-        itemsNodeList[i].addEventListener('click', itemListener, false);
+        this.menuItemsNodeList[i].addEventListener('click', itemListener, false);
     }
 
     this.updateHistory()
-    this.loadHashOrDefault();
-
-
-    //@todo
-
-    return this;
+    
+       
+    menuItem.click();
+    
 };
-
-// /**
-//  * Get menu elements NodeList
-//  * @return {Object|null} NodeList
-//  */
-// MenuToggle.prototype.getMenuNodeList= function()
-// {
-//     return this.menuContainer.querySelectorAll(this.menuItemsSelector);
-// }
 
 /**
  * Load hash || active || first item
