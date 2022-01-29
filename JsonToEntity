@@ -1,0 +1,161 @@
+'use strict';
+(function(window, undefined) {
+
+    /**
+ * JSON Response to array
+ * relationships use
+ * @constructor
+ * @param {Array} data - name of a person.
+ * @param {Array|null} included  - age of a person.
+ * @param {Array} relationships  - relationships between data.attributes and included array
+ * @example
+ * data: [{type: "mapsurveyor", id: "ESFE80E1GPT000001.1",attributes:{surveyorid:ESFE80E1GPT000001...}…},…]
+ * included: [{type: "person", id: "ESFE80E1GPT000001",…}]
+ * JsonSerializer(data, included, [surveyorid=>person])
+ */
+
+
+
+function CaveJsonResponseManager(data, included) {
+    this.data = data;
+    this.included = included||null;
+    this.ret= [];
+}
+
+CaveJsonResponseManager.prototype.getEntity= function(data){
+    let entity= data.type.charAt(0).toUpperCase() + data.type.slice(1);
+
+    switch (entity){
+        case 'Person': return new Person(data);
+        default: return null
+    }
+}
+
+
+CaveJsonResponseManager.prototype.getIncluded= function(data){
+    let inc, ret, attr, proto;
+    //loop included
+    for (let key in this.included) {
+        inc= this.included[key]
+        //Si hay match entre los includes tienen que haber un objeto para representarlo
+        if (inc.type===data.type && inc.id===data.id) {
+            return proto= this.getEntity(inc)
+        }
+    }
+    return null
+}
+
+CaveJsonResponseManager.prototype.toJsonArray = function(fields= []) {
+    let i, meta, attr, inc, el, ret= {};
+//loop data
+    for(i=0; i<this.data.length;i++)
+    {
+        el= this.data[i];
+        ret= {
+            meta: {
+                type: el.type,
+                links: el.hasOwnProperty('links')? el.links : {},
+                relationships:  el.hasOwnProperty('relationships')? el.relationships : {}
+                },
+            id: el.id,
+        }
+        //JSON
+        attr = this.data[i]['attributes']
+        //loop attributes
+        for (let key in attr) {
+            //is string or object id with relationships
+                if(ret.meta.relationships.hasOwnProperty(key)){
+                    //instanciamos para pasarlo a string
+                    inc= this.getIncluded(ret.meta.relationships[key].data)//{id, type}
+                    ret[key] = inc ? inc.toLink() : attr[key];
+                }else{
+                    ret[key]= attr[key];
+                }
+
+        }
+            this.ret[i]= ret;
+    }
+    return this.ret
+};
+
+    CaveJsonResponseManager.prototype.get = function(fields= [], fn=null) {
+
+        let r, ret=[], i, el, parsed= this.toJsonArray();
+        // console.log(parsed)
+
+        for(i=0; i<parsed.length; i++){
+            r={}
+            el= parsed[i]
+            for(let key in el){
+                if(fields.indexOf(key)!==-1){
+                    if(fn && fn.hasOwnProperty(key)){
+                        r[key]= fn[key](el)
+                    }else{
+                        r[key]=el[key]
+                    }
+
+                }
+
+            }
+            ret.push(r);
+        }
+        return ret;
+    }
+
+    CaveJsonResponseManager.prototype.toArray = function(fields= [], fn=null) {
+        let ret=[], i,r, d= this.get(fields, fn)
+        //es array
+        for(i=0; i<d.length; i++){
+            r=[]
+            //es json
+            for(let key in d[i]){
+                //order by fields array
+                r[fields.indexOf(key)]=d[i][key]
+                // r.push(d[i][key])
+            }
+            ret.push(r)
+        }
+        return ret;
+    }
+
+
+/**
+ * Person class.
+ *
+ * @constructor
+ * @param {Object} data Json Person data response
+ */
+
+function Person(data) {
+    this.data= data;
+    this.attributes = data.attributes;
+    this.links = data.links||null;
+    this.id = data.id;
+    this.type= 'person';
+}
+
+Person.prototype.toString = function () {
+    return [ this.attributes.name, " ", this.attributes.surname].join("");
+};
+
+Person.prototype.toLink = function () {
+    if(this.data.hasOwnProperty('links') && this.data.links.hasOwnProperty('self')){
+        return ['<a href="',this.data.links.self,'">', this.attributes.name, ' ', this.attributes.surname, '</a>'].join('');
+    }else{
+        return this.toString()
+    }
+};
+
+Person.prototype.toJson = function () {
+    let ret= {
+        id: this.id,
+        link: this.toLink()
+    };
+    for (let key in this.attributes) {
+        ret[key]= this.attributes[key]
+    }
+    return ret;
+};
+
+    window.CaveJsonResponseManager= CaveJsonResponseManager;
+}(window));
