@@ -1,27 +1,40 @@
 'use strict';
 (function(window, undefined) {
 
-    /**
- * JSON Response to array
- * relationships use
+/**
+ * Tomando una respuesta acorde a JSON:API https://jsonapi.org/ permite transformarla a un objeto
+ * similar a la entidad solicitada así como transformar en string sus relaciones si se encuentran
+ * en el array included response[data[], included[]}]
  * @constructor
- * @param {Array} data - name of a person.
- * @param {Array|null} included  - age of a person.
- * @param {Array} relationships  - relationships between data.attributes and included array
+ * @param {Array} data - Conjunto de entidades obtenidas en la consulta.
+ * @param {Array|null} included - Entidades referenciadas en relationships para cada elemento del array de data
  * @example
- * data: [{type: "mapsurveyor", id: "ESFE80E1GPT000001.1",attributes:{surveyorid:ESFE80E1GPT000001...}…},…]
+ * data: [
+ *   {
+ *      type: "mapsurveyor", 
+ *      id: "ESFE80E1GPT000001.1",
+ *      attributes:{
+ *          surveyorid:ESFE80E1GPT000001...
+ *      },
+ *       links[]
+ *       relationships[{type: person, id:ESFE80E1GPT000001}]
+ *       …},
+ *       …]
  * included: [{type: "person", id: "ESFE80E1GPT000001",…}]
- * JsonSerializer(data, included, [surveyorid=>person])
+ * JsonSerializer(data, included)
  */
-
-
-
 function CaveJsonResponseManager(data, included) {
     this.data = data;
     this.included = included||null;
     this.ret= [];
 }
 
+/**
+ * Dado un objeto JSON raiz, trata de encontrar la entidad a la que corresponde mediante
+ * el valor de "type" capitalizado.
+ * Las entidades se registran en este fichero... por ahora
+ * @param {Object} data - The document’s “primary data” (JSON:API)
+ */
 CaveJsonResponseManager.prototype.getEntity= function(data){
     let entity= data.type.charAt(0).toUpperCase() + data.type.slice(1);
 
@@ -31,26 +44,40 @@ CaveJsonResponseManager.prototype.getEntity= function(data){
     }
 }
 
-
+/**
+ * Busca en el array included las relaciones referenciadas en JSON.relationships
+ * @param {Object} data -   relationship[data{id, type},...]
+ * @return {Object|null} Retorna la instancia que representa ese objeto o null
+ */
 CaveJsonResponseManager.prototype.getIncluded= function(data){
     let inc, ret, attr, proto;
     //loop included
-    for (let key in this.included) {
+    for (let key in this.included) 
+    {
         inc= this.included[key]
-        //Si hay match entre los includes tienen que haber un objeto para representarlo
+        //Si hay match entre {type, id} trata de devolver la entidad
         if (inc.type===data.type && inc.id===data.id) {
-            return proto= this.getEntity(inc)
+            return this.getEntity(inc)
         }
     }
     return null
 }
 
+/**
+ * Retorna un array de objetos que se acerque a la descripción de la entidad
+ * 
+ * @param {Array} fields - Campos a devolver
+ * @return {Object|null}
+ */
 CaveJsonResponseManager.prototype.toJsonArray = function(fields= []) {
     let i, meta, attr, inc, el, ret= {};
-//loop data
+    //loop response.data
     for(i=0; i<this.data.length;i++)
     {
+        //top JSON:API resource
         el= this.data[i];
+        //Creamos el objeto a devolver.
+        //Añadimos la clave meta donde ponemos aquello que no es de la entidad pero puede ser de utilidad
         ret= {
             meta: {
                 type: el.type,
@@ -59,28 +86,39 @@ CaveJsonResponseManager.prototype.toJsonArray = function(fields= []) {
                 },
             id: el.id,
         }
-        //JSON
+        //loop sobre attributes {JSON}
         attr = this.data[i]['attributes']
-        //loop attributes
         for (let key in attr) {
-            //is string or object id with relationships
+            //Si la clave se encuentra en relationships buscamos en this.included
                 if(ret.meta.relationships.hasOwnProperty(key)){
-                    //instanciamos para pasarlo a string
-                    inc= this.getIncluded(ret.meta.relationships[key].data)//{id, type}
+                    //Buscamos mediante {id, type} y tratamos de instanciar para pasarlo a string/link (TODO mejorar?)
+                    //ya que el valor de esta clave es un ID. Si no se encuentra, dejamos el ID como valor
+                    inc= this.getIncluded(ret.meta.relationships[key].data)
+                    //TODO función en meta para devolver el objeto creado mediante getIncluded()
                     ret[key] = inc ? inc.toLink() : attr[key];
                 }else{
+                    //Si no hay relaciones el valor se queda como tal
                     ret[key]= attr[key];
                 }
-
         }
+            //Añadimos el objeto creado como retorno
             this.ret[i]= ret;
     }
     return this.ret
 };
 
+/**
+ * No me gusta el nombre de esta función ....
+ * Retorna un array de objetos JSON de acuerdo a las claves solicitadas
+ * @param {Array} fields - Claves del objeto a devolver
+ * @param {Array} fn - array de pares {key, function(element)} que se ejecuta al encontrar esa clave y retorna un valor calculado.
+ *                      key debe encontrarse entre los elementos del array field
+ * @return {Array}
+ */
     CaveJsonResponseManager.prototype.get = function(fields= [], fn=null) {
 
-        let r, ret=[], i, el, parsed= this.toJsonArray();
+        let r, ret=[], i, el, 
+            parsed= this.ret.length? this.ret : this.toJsonArray();
         // console.log(parsed)
 
         for(i=0; i<parsed.length; i++){
@@ -102,6 +140,11 @@ CaveJsonResponseManager.prototype.toJsonArray = function(fields= []) {
         return ret;
     }
 
+/**
+ * Para representar los resultados en una tabla, obtenemos el objeto json y lo
+ * convertimos en array respetando el orden dado en fields eliminando las claves.
+ * Parece una tontería, pero eli
+ */ 
     CaveJsonResponseManager.prototype.toArray = function(fields= [], fn=null) {
         let ret=[], i,r, d= this.get(fields, fn)
         //es array
