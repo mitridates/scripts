@@ -1,6 +1,15 @@
 'use strict';
 (function(window, undefined) {
 
+
+if (typeof Object.create !== 'function') {
+    Object.create = function (o) {
+        var F = function () {};
+        F.prototype = o;
+        return new F();
+    };
+}
+
 /**
  * Tomando una respuesta acorde a JSON:API https://jsonapi.org/ permite transformarla a un objeto
  * similar a la entidad solicitada así como transformar en string sus relaciones si se encuentran
@@ -140,10 +149,13 @@ CaveJsonResponseManager.prototype.toJsonArray = function(fields= []) {
         return ret;
     }
 
+
+
+
 /**
  * Para representar los resultados en una tabla, obtenemos el objeto json y lo
  * convertimos en array respetando el orden dado en fields eliminando las claves.
- * Parece una tontería, pero eli
+ * Parece una tontería, pero economiza código.
  */ 
     CaveJsonResponseManager.prototype.toArray = function(fields= [], fn=null) {
         let ret=[], i,r, d= this.get(fields, fn)
@@ -161,21 +173,52 @@ CaveJsonResponseManager.prototype.toJsonArray = function(fields= []) {
         return ret;
     }
 
-
 /**
- * Person class.
+ *  JSON:API resource
  *
  * @constructor
- * @param {Object} data Json Person data response
+ * @see https://jsonapi.org/
+ * @param {Object} data Recurso JSON:API obtenido en el array response
  */
-
-function Person(data) {
-    this.data= data;
+function jsonApiSpec(data){
+    this.id = data.id;
+    this.type= data.type;
     this.attributes = data.attributes;
     this.links = data.links||null;
-    this.id = data.id;
-    this.type= 'person';
+    this.relationships= data.relationships||null;
+    this.selfLink= function(){
+        return (this.links && this.links.hasOwnProperty('self')) ? this.links.self : null;
+        }
+    
 }
+
+function checkEntityType(type, expected){
+        if(this.type!==expected throw new ExcepcionInvalidType(this.type, expected);
+
+}
+
+function ExcepcionInvalidType(type, expected) {
+   this.type = valor;
+   this.expected= expected;
+   this.mensaje = "El tipo de entidad no se corresponde con el especificado";
+   this.toString = function() {
+       return ['Invalid type "', this.type, '" expected "', this.expected, '"'].join('');
+   };
+}
+
+
+
+/**
+ * Person class. Representación javascript de la entidad Person
+ *
+ * @constructor
+ * @param {Object} data Recurso JSON:API obtenido en el array response
+ */
+function Person(data) {
+    jsonApiSpec.call(this, data);
+    checkEntityType(this.type, 'person')
+}
+
 
 Person.prototype.toString = function () {
     return [ this.attributes.name, " ", this.attributes.surname].join("");
@@ -199,6 +242,9 @@ Person.prototype.toJson = function () {
     }
     return ret;
 };
+
+Person.prototype = Object.create(jsonApiSpec.prototype);
+
 
     window.CaveJsonResponseManager= CaveJsonResponseManager;
 }(window));
