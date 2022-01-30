@@ -1,10 +1,8 @@
-//JSDoc - how to document prototype methods https://stackoverflow.com/questions/27343152/jsdoc-how-to-document-prototype-methods
 /**
  * Immediately-Invoked Function Expression (IIFE).
  * @function
  * @param {object} window - Global window object.
  * @returns {Object} window.{JsonApiManager, JsonApispec}
- * @returns {Object} window.
  */
 (function(window, undefined) {
     'use strict';
@@ -35,15 +33,13 @@
         return true;
     }
 
-    /**#####    JsonApiSpec     ####
-     * *****************************
-     */
-
+    //#####    JsonApiSpec     ####
+    
     /**
      * JSON:API Set resource single object
      * @constructor
      * @name JsonApiSpec
-     * @param {Object} data Recurso JSON:API obtenido en el array response
+     * @param {Object} - JSON:API resource object
      * @see https://jsonapi.org/
      */
     function JsonApiSpec(data){
@@ -78,7 +74,7 @@
     /**
      * Get attribute|[attributes]|property by name or function. Function can returns compound values
      * @memberof JsonApiSpec
-     * @param {string|function|Array} s
+     * @param {string|function|[]} s
      * @return {string|*}
      */    
     JsonApiSpec.prototype.get= function (s){
@@ -115,19 +111,15 @@
         this.attributes[key]= val;
         return this;
     }
-    /**##### End JsonApiSpec     ####
-     * *****************************
-     */
+    //##### End JsonApiSpec     ####
 
-    /**#####    jsonApiManager    ####
-     * ******************************
-     */
+    //#####    jsonApiManager    ####
     
     /**
-     * Intermediary between ajax response and higher JsonApiSpec
+     * Intermediary between XMLHttpRequest response and JsonApiSpec
      * @constructor
-     * @param {Array} data -  response.data
-     * @param {Array|null} included - response.included
+     * @param {[]} data - response.data
+     * @param {[]|null} included - response.included
      */
     function JsonApiManager(data, included) {
         this.data = data;
@@ -139,10 +131,10 @@
     /**
      * Set instance of JsonApiSpec
      * @memberof JsonApiManager
-     * @param {Object} ob - Single resource object (JSON:API)
+     * @param {Object} ob - Single JSON:API resource object
      * @return {JsonApiSpec}
      */
-    JsonApiManager.prototype.toJsonSpec= function(ob){
+    JsonApiManager.prototype.toJsonApiSpec= function(ob){
         let className= ob.type.charAt(0).toUpperCase() + ob.type.slice(1);
         switch (className){
             case 'Person': return new Person(ob);
@@ -151,20 +143,22 @@
     }
 
     /**
-     * Set instance of JsonApiSpec if included in relationship
+     * Create instance of JsonApiSpec if included
      * @memberof JsonApiManager
-     * @param {Object} rel -   relationship[{id, type},...]
+     * @param {Object} rel - Relationship{id, type}
      * @return {JsonApiSpec}
      */
     JsonApiManager.prototype.getIncluded= function(rel){
         let inc;
-        for (let key in this.included){//loop included
+        for (let key in this.included){
             inc= this.included[key]
             if (inc.type===rel.type && inc.id===rel.id) {
-                return this.toJsonSpec(inc)
+                return this.toJsonApiSpec(inc)
             }
         }
-        return new JsonApiSpec(inc)
+        //posible null???
+        return null
+        //return new JsonApiSpec(inc)
     }
 
     /**
@@ -176,7 +170,7 @@
         let i,spec, inc;
 
         for(i=0; i<this.data.length;i++){//loop response.data
-            spec= this.toJsonSpec(this.data[i])
+            spec= this.toJsonApiSpec(this.data[i])
 
             for (let key in spec.attributes){
                 if(spec.relationships && spec.relationships[key]){
@@ -196,10 +190,10 @@
 
     /**
      * Retorna un array de objetos JSON de acuerdo a las claves solicitadas
-     * @param {Array} fields - Claves del objeto a devolver
+     * @param {[]} fields - Claves del objeto a devolver
      * @param {[Object]} fn - array de pares {key, function(element)} que se ejecuta al encontrar esa clave y retorna un valor calculado.
      *                      key debe encontrarse entre los elementos del array field
-     * @return {Array}
+     * @return {[]}
      */
     JsonApiManager.prototype.get = function(fields= [], fnArr=null) {
         let i, ii, el, field, val,
@@ -233,17 +227,14 @@
         return ret;
     }
 
-    /**##### End jsonApiManager    ####
-     * ******************************
-     */
-
-
+    //##### End jsonApiManager    ####
+    
+    //##### Person    ####
     /**
-     * Person class. Representación javascript de la entidad Person
-     *
+     * Person class.
+     * @name Person
      * @constructor
-     * @instance
-     * @param {Object} data Recurso JSON:API obtenido en el array response
+     * @augments JsonApiSpec
      * @throws ExceptionInvalidType
      */
     function Person(data) {
@@ -254,20 +245,8 @@
         }
 
     }
-
-    Person.prototype.toJson = function () {
-        let ret= {
-            id: this.id,
-            link: this.toLink()
-        };
-        for (let key in this.attributes) {
-            ret[key]= this.attributes[key]
-        }
-        return ret;
-    };
-
+    
     Person.prototype = Object.create(JsonApiSpec.prototype);
-
 
     window.JsonApiManager= JsonApiManager;
     window.JsonApiSpec= JsonApiSpec;
