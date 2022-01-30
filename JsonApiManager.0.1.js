@@ -1,8 +1,10 @@
+//JSDoc - how to document prototype methods https://stackoverflow.com/questions/27343152/jsdoc-how-to-document-prototype-methods
 /**
  * Immediately-Invoked Function Expression (IIFE).
  * @function
  * @param {object} window - Global window object.
- * @returns {Object} window.JsonApiManager
+ * @returns {Object} window.{JsonApiManager, JsonApispec}
+ * @returns {Object} window.
  */
 (function(window, undefined) {
     'use strict';
@@ -12,7 +14,7 @@
      * @param {string} type
      * @param {string} expected
      */
-    function ExceptionInvalidType(type, expected) {
+    function InvalidTypeException(type, expected) {
         this.type = type;
         this.expected = expected;
         this.mensaje = "El tipo de entidad no se corresponde con el especificado";
@@ -28,8 +30,8 @@
      * @return boolean
      * @throws ExceptionInvalidType
      */
-    function checkEntityType(type, expected){
-        if(type!==expected) throw new ExceptionInvalidType(type, expected);
+    function isExpectedEntityType(type, expected){
+        if(type!==expected) throw new InvalidTypeException(type, expected);
         return true;
     }
 
@@ -38,11 +40,11 @@
      */
 
     /**
-     * JSON:API resource single object
+     * JSON:API Set resource single object
      * @constructor
      * @name JsonApiSpec
-     * @see https://jsonapi.org/
      * @param {Object} data Recurso JSON:API obtenido en el array response
+     * @see https://jsonapi.org/
      */
     function JsonApiSpec(data){
         this.id = data.id;
@@ -66,6 +68,13 @@
         return a? ['<a href="',a,'">', name,'</a>'].join('') : null;
     }
     
+    /**
+     * Get attribute by name o function
+     * @constructor
+     * @name JsonApiSpec.get    
+     * @param {Object} data Recurso JSON:API obtenido en el array response
+     * @see https://jsonapi.org/
+     */    
     JsonApiSpec.prototype.get= function (s){
         let i, ret=[];
         switch (typeof s){
@@ -221,10 +230,11 @@
      * @constructor
      * @instance
      * @param {Object} data Recurso JSON:API obtenido en el array response
+     * @throws ExceptionInvalidType
      */
     function Person(data) {
         JsonApiSpec.call(this, data);
-        checkEntityType(this.type, 'person')
+        isExpectedEntityType(this.type, 'person')
         this.toString= function (){
             return this.attributes.name+' '+this.attributes.surname;
         }
