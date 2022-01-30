@@ -57,11 +57,18 @@
         }
     }
 
-
+    /**
+     * @memberof JsonApiSpec
+     * @return {string|null} url
+     */
     JsonApiSpec.prototype.toLink= function (){
         return (this.links && this.links.hasOwnProperty('self')) ? this.links.self : null;
     }
     
+    /**
+     * @memberof JsonApiSpec
+     * @return {string|null} href
+     */    
     JsonApiSpec.prototype.toAnchor= function (){
         let a= this.toLink(),
             name= this.toString === Object.prototype.toString ? this.id : this.toString();//No hay link o el método toString no ha sido sobreescrito
@@ -69,11 +76,10 @@
     }
     
     /**
-     * Get attribute by name o function
-     * @constructor
-     * @name JsonApiSpec.get    
-     * @param {Object} data Recurso JSON:API obtenido en el array response
-     * @see https://jsonapi.org/
+     * Get attribute|[attributes]|property by name or function. Function can returns compound values
+     * @memberof JsonApiSpec
+     * @param {string|function|Array} s
+     * @return {string|*}
      */    
     JsonApiSpec.prototype.get= function (s){
         let i, ret=[];
@@ -98,6 +104,13 @@
         return null;
     }
 
+    /**
+     * Set attribute
+     * @memberof JsonApiSpec
+     * @param {string} key
+     * @param {string|*} val     
+     * @return {JsonApiSpec}
+     */       
     JsonApiSpec.prototype.set= function (key, val){
         this.attributes[key]= val;
         return this;
@@ -109,11 +122,12 @@
     /**#####    jsonApiManager    ####
      * ******************************
      */
+    
     /**
-     * Intermediación entre una respuesta ajax y JsonApiSpec
+     * Intermediary between ajax response and higher JsonApiSpec
      * @constructor
-     * @param {Array} data -  response.[Array of resource objects].
-     * @param {Array|null} included - response.[Array of included resource objects]
+     * @param {Array} data -  response.data
+     * @param {Array|null} included - response.included
      */
     function JsonApiManager(data, included) {
         this.data = data;
@@ -123,22 +137,24 @@
     }
 
     /**
-     * Busca la entidad que representa el valor data.type
-     * @return {Object} data - Single resource object (JSON:API)
-     * @return {JsonApiSpec} Objeto estructurado
+     * Set instance of JsonApiSpec
+     * @memberof JsonApiManager
+     * @param {Object} ob - Single resource object (JSON:API)
+     * @return {JsonApiSpec}
      */
-    JsonApiManager.prototype.toJsonSpec= function(data){
-        let className= data.type.charAt(0).toUpperCase() + data.type.slice(1);
+    JsonApiManager.prototype.toJsonSpec= function(ob){
+        let className= ob.type.charAt(0).toUpperCase() + ob.type.slice(1);
         switch (className){
-            case 'Person': return new Person(data);
-            default: return new JsonApiSpec(data)
+            case 'Person': return new Person(ob);
+            default: return new JsonApiSpec(ob)
         }
     }
 
     /**
-     * Busca en included las relaciones existentes en un recurso individual
+     * Set instance of JsonApiSpec if included in relationship
+     * @memberof JsonApiManager
      * @param {Object} rel -   relationship[{id, type},...]
-     * @return {Object|null} Retorna la instancia que representa ese objeto o null
+     * @return {JsonApiSpec}
      */
     JsonApiManager.prototype.getIncluded= function(rel){
         let inc;
@@ -151,15 +167,12 @@
         return new JsonApiSpec(inc)
     }
 
-
-
     /**
-     * Retorna un array de objetos que se acerque a la descripción de la entidad
-     *
-     * @param {Array} fields - Campos a devolver
-     * @return {Array}
+     * Parse XMLHttpRequest Response
+     * @memberof JsonApiManager
+     * @return {[]}
      */
-    JsonApiManager.prototype.parseResponse = function(fields= []) {
+    JsonApiManager.prototype.parseResponse = function() {
         let i,spec, inc;
 
         for(i=0; i<this.data.length;i++){//loop response.data
@@ -189,12 +202,13 @@
      * @return {Array}
      */
     JsonApiManager.prototype.get = function(fields= [], fnArr=null) {
-
         let i, ii, el, field, val,
             ret=[],
             arr=[],
-            parsed= this.parseResponse();
+            parsed= this.ret.length? this.ret : this.parseResponse();
 
+        if(arguments.length===0) return this.parsed
+        
         for(i=0; i<parsed.length; i++){
             /**
              * @var {JsonApiSpec} el
@@ -206,7 +220,7 @@
                 field= fields[ii]
                 val= el.get(field)//puede ser string|object
 
-                if(fnArr.hasOwnProperty(field)){//puede ser un valor compuesto
+                if(fnArr && fnArr.hasOwnProperty(field)){//puede ser un valor compuesto
                     arr.push(fnArr[field].call(el, val))
                 }else if(val instanceof JsonApiSpec){//utilizamos toString
                     arr.push(val.toString())
