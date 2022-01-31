@@ -74,7 +74,7 @@
     /**
      * Get attribute|[attributes]|property by name or function. Function can returns compound values
      * @memberof JsonApiSpec
-     * @param {string|function|[]} s
+     * @param {string|*} s
      * @return {string|*}
      */    
     JsonApiSpec.prototype.get= function (s){
@@ -118,8 +118,8 @@
     /**
      * Intermediary between XMLHttpRequest response and JsonApiSpec
      * @constructor
-     * @param {[]} data - response.data
-     * @param {[]|null} included - response.included
+     * @param {Array} data - response.data
+     * @param {Array|null} included - response.included
      */
     function JsonApiManager(data, included) {
         this.data = data;
@@ -164,7 +164,7 @@
     /**
      * Parse XMLHttpRequest Response
      * @memberof JsonApiManager
-     * @return {[]}
+     * @return {Array}
      */
     JsonApiManager.prototype.parseResponse = function() {
         let i,spec, inc;
@@ -190,10 +190,10 @@
 
     /**
      * Retorna un array de objetos JSON de acuerdo a las claves solicitadas
-     * @param {[]} fields - Claves del objeto a devolver
-     * @param {[Object]} fn - array de pares {key, function(element)} que se ejecuta al encontrar esa clave y retorna un valor calculado.
+     * @param {Array} fields - Claves del objeto a devolver
+     * @param {Array} fn - array de pares {key, function(element)} que se ejecuta al encontrar esa clave y retorna un valor calculado.
      *                      key debe encontrarse entre los elementos del array field
-     * @return {[]}
+     * @return {Array}
      */
     JsonApiManager.prototype.get = function(fields= [], fnArr=null) {
         let i, ii, el, field, val,
@@ -204,11 +204,9 @@
         if(arguments.length===0) return this.parsed
         
         for(i=0; i<parsed.length; i++){
-            /**
-             * @var {JsonApiSpec} el
-             */
-            el= parsed[i]
+            el= parsed[i] //JsonApiSpec
             arr=[]
+
             for(ii=0; ii<fields.length; ii++){
 
                 field= fields[ii]
