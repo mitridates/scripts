@@ -114,10 +114,11 @@
     //##### End JsonApiSpec     ####
 
     //#####    jsonApiManager    ####
-    
+
     /**
      * Intermediary between XMLHttpRequest response and JsonApiSpec
      * @constructor
+     * @name JsonApiManager
      * @param {Array} data - response.data
      * @param {Array|null} included - response.included
      */
@@ -189,10 +190,11 @@
     }
 
     /**
-     * Retorna un array de objetos JSON de acuerdo a las claves solicitadas
+     * Retorna un arreglo de valores de acuerdo a las claves solicitadas
+     * @memberof JsonApiManager
      * @param {Array} fields - Claves del objeto a devolver
-     * @param {Array} fn - array de pares {key, function(element)} que se ejecuta al encontrar esa clave y retorna un valor calculado.
-     *                      key debe encontrarse entre los elementos del array field
+     * @param {Array} fn - array de pares {key:function(JsonApiSpec, value)} que permite retornar un valor calculado para dicha clave.
+     *                      key debe encontrarse en el array fields
      * @return {Array}
      */
     JsonApiManager.prototype.get = function(fields= [], fnArr=null) {
