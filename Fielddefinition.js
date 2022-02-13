@@ -95,6 +95,10 @@
             let type= this.get('datatype')
             return type && DATATYPE.hasOwnProperty(type)? DATATYPE[type] : type;
         }
+        this.getEntity= function(){
+            let type= this.get('entity')
+            return type && ENTITY.hasOwnProperty(type)? ENTITY[type] : type;
+        }        
     }
     Fielddefinition.prototype = Object.create(Fieldvaluecode.prototype);
 
