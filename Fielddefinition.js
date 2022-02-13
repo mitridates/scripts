@@ -65,10 +65,32 @@
     function Fieldvaluecode(data) {
         JsonApiSpec.call(this, data);
         isExpectedEntityType(this.type, 'fieldvaluecode')
+        this.lang='en',
+        this.dictionary={
+            coding: CODING,
+            datatype: DATATYPE,
+            valuetype: VALUETYPE,
+            entity: ENTITY
+        }
+        this.trans= {}   
         this.getCoding= function(){
             let type= this.get('coding')
             return type && CODING.hasOwnProperty(type)? CODING[type] : type;            
         }
+        
+        this.addTrans= function(lang, ob){
+            for(let konst in ob){
+                if(this.dictionary.hasOwnProperty(konst)){
+                    for(let el in ob[konst]){
+                        if(this.dictionary[konst].hasOwnProperty(el)){
+                            this.trans[lang][konst][el] ? ob[konst][el]
+                        }
+                    }
+                }
+            }            
+        }
+        
+        
        
     }
     
