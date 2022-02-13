@@ -54,6 +54,10 @@
                 XU:  'An update batch'
     }
 
+    let addToDiccionary= function(key, ob){
+        this.dictionary[key]= ob;
+        return this;
+    }
         //##### Fieldvaluecode    ####
     /**
      * Fieldvaluecode class.
@@ -66,16 +70,25 @@
         JsonApiSpec.call(this, data);
         isExpectedEntityType(this.type, 'fieldvaluecode')
         this.lang='en',
-        this.dictionary={
-            coding: CODING,
-            datatype: DATATYPE,
-            valuetype: VALUETYPE,
-            entity: ENTITY
+//         this.dictionary={
+//             coding: CODING,
+//             datatype: DATATYPE,
+//             valuetype: VALUETYPE,
+//             entity: ENTITY
         }
+        addToDictionary.call(this, 'coding', CODING)
+    
         this.trans= {}   
+        
         this.getCoding= function(){
             let type= this.get('coding')
             return type && CODING.hasOwnProperty(type)? CODING[type] : type;            
+        }
+        
+        this.getTrans = function(cons, key){
+            if(this.lang==='en'){
+                return this.dictionary.hasOwnProperty(cons)
+            }
         }
         
         this.addTrans= function(lang, ob){
