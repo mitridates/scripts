@@ -6,27 +6,6 @@
  */
 (function(window, undefined) {
     'use strict';
-    //
-    // function InvalidJsonApiSpecError(type, expected, fileName, lineNumber) {
-    //     let instance = new Error(['Invalid type "', type, '" expected "', expected, '"'].join(''), fileName, lineNumber);
-    //     instance.name = 'InvalidJsonApiSpecError';
-    //     Object.setPrototypeOf(instance, Object.getPrototypeOf(this));
-    //     if (Error.captureStackTrace) Error.captureStackTrace(instance, InvalidJsonApiSpecError);
-    //     return instance;
-    // }
-    // InvalidJsonApiSpecError.prototype = Object.create(Error.prototype, {
-    //     constructor: {
-    //         value: Error,
-    //         enumerable: false,
-    //         writable: true,
-    //         configurable: true
-    //     }
-    // });
-    // if (Object.setPrototypeOf){
-    //     Object.setPrototypeOf(InvalidJsonApiSpecError, Error);
-    // } else {
-    //     InvalidJsonApiSpecError.__proto__ = Error;
-    // }
 
     //#####    Singleton     ####
     /**
